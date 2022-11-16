@@ -18,75 +18,76 @@ public class AutoPipelineBetter extends OpenCvPipeline {
     Hardware robot = Hardware.getInstance();
     Mat mat = new Mat();
     parkLocation parkLoc;
-    static final Rect left1 = new Rect(
-            new Point(0,260),
-            new Point(183,270));
-    static final Rect left2 = new Rect(
-            new Point(183,260),
-            new Point(366,270));
-    static final Rect left3 = new Rect(
-            new Point(366,260),
-            new Point(549,270));
-    static final Rect center1 = new Rect(
-            new Point(549,260),
-            new Point(732,270));
-    static final Rect right3 = new Rect(
-            new Point(732,260),
-            new Point(915,270));
-    static final Rect right2 = new Rect(
-            new Point(915,260),
-            new Point(1098,270));
-    static final Rect right1 = new Rect(
-            new Point(1098,260),
-            new Point(1280,270));
+    Point point1 = new Point(480,260);
+    Point point2 = new Point(600,460);
+    Rect elementLocation = new Rect(
+            point1,
+            point2);
+
     Telemetry telemetry;
     public AutoPipelineBetter(Telemetry t){telemetry = t;}
 
     public Mat processFrame(Mat input) {
         Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
 
+        //input =  input.submat(elementLocation);
+
         double hueAvg = Core.sumElems(input).val[0];
         double saturationAvg = Core.sumElems(input).val[1];
         double valueAvg = Core.sumElems(input).val[2];
 
-        Scalar lowRGBOrange = new Scalar(0, 100, 100);
-        Scalar highRBGOrange = new Scalar(30, 255, 255);
+        Scalar lowRGBRed = new Scalar(0, 100, 100);
+        Scalar highRBGRed = new Scalar(11, 255, 255);
 
-        Scalar lowRGBGreen = new Scalar(80, 75, 75);
-        Scalar highRBGGreen = new Scalar(140, 255, 255);
+        Scalar lowRGBGreen = new Scalar(35, 70, 80);
+        Scalar highRBGGreen = new Scalar(88, 255, 255);
 
-        Scalar lowRGBBlue = new Scalar(180, 50, 50);
-        Scalar highRGBBlue = new Scalar(270, 255, 255);
+        Scalar lowRGBBlue = new Scalar(100, 100, 100);
+        Scalar highRGBBlue = new Scalar(130, 255, 255);
 
-        Mat orangeChannel = new Mat();
-        Core.inRange(mat,lowRGBOrange, highRBGOrange, orangeChannel);
+        Mat redChannel = new Mat();
+        Core.inRange(mat,lowRGBRed, highRBGRed, redChannel);
+        redChannel = redChannel.submat(elementLocation);
 
         Mat greenChannel = new Mat(); // George is best :)
         Core.inRange(mat, lowRGBGreen, highRBGGreen, greenChannel);
+        greenChannel = greenChannel.submat(elementLocation);
 
         Mat blueChannel = new Mat();
         Core.inRange(mat, lowRGBBlue, highRGBBlue, blueChannel);
+        blueChannel = blueChannel.submat(elementLocation);
+
+        Scalar rectangleColor = new Scalar(0,0,0);
 
         double green = Core.sumElems(greenChannel).val[0] / (greenChannel.rows() * greenChannel.cols());
-        double orange = Core.sumElems(orangeChannel).val[0] / (orangeChannel.rows() * orangeChannel.cols());
+        double red = Core.sumElems(redChannel).val[0] / (redChannel.rows() * redChannel.cols());
         double blue = Core.sumElems(blueChannel).val[0] / (blueChannel.rows() * blueChannel.cols());
 
-        if(green > orange){
+        if(green > red){
             //green
             parkLoc = parkLocation.parkingSpot2;
+            rectangleColor = new Scalar(0,255,0);
+            telemetry.addData("GREEN","");
 //            telemetry.addData("Green is greatest","");
 //            telemetry.update();
-        }else if(orange > blue){
-            //orange
+        }else if(red > blue){
+            //red
             parkLoc = parkLocation.parkingSpot3;
+            rectangleColor = new Scalar(255,0,0);
+            telemetry.addData("RED","");
 //            telemetry.addData("Orange is greatest","");
 //            telemetry.update();
         }else{
             //blue
             parkLoc = parkLocation.parkingSpot1;
+            rectangleColor = new Scalar(0,0,255);
+            telemetry.addData("BLUE","");
 //            telemetry.addData("Blue is greatest","");
 //            telemetry.update();
         }
+        telemetry.update();
+
+        Imgproc.rectangle(input, point1, point2, rectangleColor, 10);
 
 //        Core.inRange(mat, lowHSV, highHSV, mat);
 //        Mat left1Pixel = mat.submat(left1);
@@ -117,7 +118,7 @@ public class AutoPipelineBetter extends OpenCvPipeline {
 //        }else{
 //            blockLoc = blockLocation.notFound;
 //        }
-        return mat;
+        return input;
     }
 
     public parkLocation getParkingSpot(){return parkLoc;}

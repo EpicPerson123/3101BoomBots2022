@@ -2,11 +2,13 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
@@ -21,6 +23,7 @@ public class Hardware {
     DcMotor armMotor1, armMotor2, armIntake;
     AnalogInput armPotentiometer;
     BNO055IMU imu;
+    Servo intakeServo;
 
     OpenCvCamera camera;
 
@@ -88,7 +91,7 @@ public class Hardware {
             armMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             //bl.setDirection(DcMotorSimple.Direction.REVERSE);
             armMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            armMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            armMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             armMotor1.setPower(0);
         }catch(Exception e){
             armMotor1 = null;
@@ -99,7 +102,7 @@ public class Hardware {
             armMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             armMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
             armMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            armMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            armMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             armMotor2.setPower(0);
         }catch(Exception e){
             armMotor2 = null;
@@ -136,6 +139,12 @@ public class Hardware {
             imu.initialize(parameters);
         }catch(Exception e){
             imu = null;
+        }
+        try{
+            intakeServo = hwMap.get(Servo.class, "iservo");
+            intakeServo.setPosition(intakeServo.getPosition());
+        }catch(Exception e){
+            intakeServo = null;
         }
 
 

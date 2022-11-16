@@ -4,8 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.checkerframework.checker.units.qual.A;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -13,9 +11,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
-@Autonomous (name = "BlueAuto")
+@Autonomous (name = "ParkingAuto")
 
-public class BlueAuto extends LinearOpMode {
+public class ParkingAuto extends LinearOpMode {
     Hardware hw = Hardware.getInstance();
 
 
@@ -68,38 +66,55 @@ public class BlueAuto extends LinearOpMode {
         ODOHorizontal = hw.fr;
         ODOParallel = hw.bl;
 
-        //armStable.setArmTarget(0.71);
-        driveForward(42,0.8);
-        armMovement(0.66, 0.6);
-//        while(hw.armPotentiometer.getVoltage() > armStable.getArmTarget() + armStable.getArmTarget() * 0.05 || hw.armPotentiometer.getVoltage() < armStable.getArmTarget() - armStable.getArmTarget() * 0.05);
-        try{
-            Thread.sleep(800);
-        }catch(Exception e){
-
-        }
-        strafeRight(4.5,0.7);
-        driveForward(5,0.5);
-        //turn(0,0.6);
-        armMovement(0.64, 0.6);
-        setServo(0.6);
-        setServo(0.08);
-        //driveForward(1.5,-0.6);
+//        //armStable.setArmTarget(0.71);
+//        driveForward(61,0.8);
+//        armMovement(0.64, 0.70);
+////        while(hw.armPotentiometer.getVoltage() > armStable.getArmTarget() + armStable.getArmTarget() * 0.05 || hw.armPotentiometer.getVoltage() < armStable.getArmTarget() - armStable.getArmTarget() * 0.05);
+//        try{
+//            Thread.sleep(800);
+//        }catch(Exception e){
+//
+//        }
+//        turn(70, 0.4);
+//        driveForward(7.2,0.4);
+//        try {
+//            Thread.sleep(2000);
+//        }catch (InterruptedException e){
+//
+//        }
+//        setServo(0.6);
+//        setServo(0.08);
+//        driveBackwards(2,0.4);
+//        turn(162,0.3);
+//        armMovement(0,0.6);
+//        turn(162,0.3);
+//        driveForward(8,0.3);
+////        strafeRight(3,0.7);
+////        turn(0,0.6);
+////        driveForward(5,0.5);
+////        //turn(0,0.6);
+////        armMovement(0.65, 0.6);
+////        setServo(0.6);
+////        setServo(0.08);
+////        driveBackwards(1,0.6);
 
         switch(location){
             case parkingSpot1:
                 telemetry.addData("BLUE","");
-                strafeRight(12,0.5);
+                //strafeRight(12,0.5);
+                strafeRight(21,0.6);
                 break;
             case parkingSpot2:
                 telemetry.addData("GREEN","");
-                strafeLeft(30,0.5);
+                //strafeLeft(30,0.5);
+                strafeLeft(21,0.6);
                 break;
             case parkingSpot3:
                 telemetry.addData("RED","");
-                strafeLeft(12,0.5);
+                //strafeLeft(12,0.5);
                 break;
         }
-        //driveForward(10,-0.5);
+        driveForward(30,0.5);
         //turn(180,0.6);
 
     }
@@ -136,7 +151,7 @@ public class BlueAuto extends LinearOpMode {
         double ODOPower;
 
         hw.setPower(power,power,power,power);
-        while(Math.abs(ODOParallel.getCurrentPosition()) > (ticks * 0.05) + ticks && Math.abs(ODOParallel.getCurrentPosition()) < (ticks * 0.05) - ticks){
+        while(!(ODOParallel.getCurrentPosition() < ticks + ticks * 0.05 && ODOParallel.getCurrentPosition() > ticks - ticks * 0.05)){
 //            ODOPower = ODOHorizontal.getCurrentPosition() / (ticks - ODOParallel.getCurrentPosition());
 //            hw.addPower(ODOPower,-ODOPower,-ODOPower,ODOPower);
         }
@@ -187,6 +202,7 @@ public class BlueAuto extends LinearOpMode {
     }
 
     public void armMovement(double targetVolts, double power){
+        targetVolts += initialArmPos;
         armStable.setArmStuff(false);
         targetArmPos = targetVolts;
         armStable.resetPower();
@@ -209,9 +225,11 @@ public class BlueAuto extends LinearOpMode {
         Orientation angles = hw.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         hw.setPower(-power,power,-power,power);
         double trueAngle = (angles.firstAngle >= 0) ? 180 + angles.firstAngle : Math.abs(angles.firstAngle);
+        //trueAngle = Math.abs(angles.firstAngle);
         while(trueAngle < degrees - (degrees * 0.05) || trueAngle > degrees + (degrees * 0.05)){
             angles = hw.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             trueAngle = (angles.firstAngle >= 0) ? 180 + angles.firstAngle : Math.abs(angles.firstAngle);
+            //trueAngle = Math.abs(angles.firstAngle);
             telemetry.addData("Angle ", trueAngle);
             telemetry.update();
         }
@@ -221,7 +239,7 @@ public class BlueAuto extends LinearOpMode {
     public void setServo(double value){
         hw.intakeServo.setPosition(value);
         try{
-            Thread.sleep(500);
+            Thread.sleep(1000);
         }catch(Exception e){
 
         }
